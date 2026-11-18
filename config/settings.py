@@ -1,5 +1,6 @@
 
 
+
 import os
 from pathlib import Path
 
@@ -30,13 +31,15 @@ DEBUG = os.environ.get("DEBUG", "False").lower() in (
 
 ALLOWED_HOSTS = [
     "solicitud1.vercel.app",
+    "solicitud1-b5pnc4vmr-abkeno.vercel.app",
     ".vercel.app",
     "localhost",
     "127.0.0.1",
 ]
 
-# Agregar el dominio proporcionado por Vercel.
+# Dominio dinámico de Vercel
 vercel_url = os.environ.get("VERCEL_URL", "").strip()
+
 vercel_url = (
     vercel_url.removeprefix("https://")
     .removeprefix("http://")
@@ -48,7 +51,7 @@ if vercel_url and vercel_url not in ALLOWED_HOSTS:
 
 
 # ==========================================================
-# PROTECCIÓN CSRF
+# PROTECCIÓN CSRF Y HTTPS
 # ==========================================================
 
 CSRF_TRUSTED_ORIGINS = [
@@ -56,27 +59,36 @@ CSRF_TRUSTED_ORIGINS = [
     "https://solicitud1-b5pnc4vmr-abkeno.vercel.app",
 ]
 
+# Agregar dominio dinámico de Vercel
 if vercel_url:
     origin = f"https://{vercel_url}"
+
     if origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(origin)
 
-# Permitir otros orígenes configurados en Vercel.
+# Orígenes adicionales configurados en Vercel
 extra_csrf_origins = os.environ.get(
     "CSRF_TRUSTED_ORIGINS", ""
 )
 
 for origin in extra_csrf_origins.split(","):
     origin = origin.strip().rstrip("/")
+
     if origin and origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(origin)
 
-
-# Vercel recibe HTTPS y lo reenvía a la aplicación.
+# Reconocer HTTPS detrás del proxy de Vercel
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
 )
+
+# Redireccionar a HTTPS en producción
+SECURE_SSL_REDIRECT = not DEBUG
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_REFERRER_POLICY = "same-origin"
 
 
 # ==========================================================
@@ -90,6 +102,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "incidencias",
 ]
 
@@ -100,12 +113,19 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+
     "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
+
     "django.middleware.common.CommonMiddleware",
+
     "django.middleware.csrf.CsrfViewMiddleware",
+
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+
     "django.contrib.messages.middleware.MessageMiddleware",
+
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -126,12 +146,19 @@ WSGI_APPLICATION = "config.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+
+        "DIRS": [
+            BASE_DIR / "templates",
+        ],
+
         "APP_DIRS": True,
+
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+
                 "django.contrib.auth.context_processors.auth",
+
                 "django.contrib.messages.context_processors.messages",
             ],
         },
@@ -145,12 +172,14 @@ TEMPLATES = [
 
 DATABASE_URL = (
     os.environ.get("DATABASE_URL", "").strip()
+
     or os.environ.get(
         "abkenosolicitud_DATABASE_URL", ""
     ).strip()
 )
 
 if DATABASE_URL:
+
     DATABASES = {
         "default": dj_database_url.parse(
             DATABASE_URL,
@@ -158,7 +187,9 @@ if DATABASE_URL:
             ssl_require=True,
         )
     }
+
 else:
+
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -178,18 +209,28 @@ AUTH_PASSWORD_VALIDATORS = [
             "UserAttributeSimilarityValidator"
         ),
     },
+
     {
         "NAME": (
             "django.contrib.auth.password_validation."
             "MinimumLengthValidator"
         ),
     },
+
     {
         "NAME": (
             "django.contrib.auth.password_validation."
             "CommonPasswordValidator"
         ),
     },
+
+    {
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
+        ),
+    },
+
     {
         "NAME": (
             "django.contrib.auth.password_validation."
@@ -226,6 +267,7 @@ STORAGES = {
             "django.core.files.storage.FileSystemStorage"
         ),
     },
+
     "staticfiles": {
         "BACKEND": (
             "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -261,9 +303,15 @@ SESSION_COOKIE_SAMESITE = "Lax"
 
 CSRF_COOKIE_SAMESITE = "Lax"
 
+SESSION_COOKIE_AGE = 1209600
+
+SESSION_SAVE_EVERY_REQUEST = True
+
 
 # ==========================================================
 # CONFIGURACIÓN GENERAL
 # ==========================================================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+X_FRAME_OPTIONS = "DENY"
