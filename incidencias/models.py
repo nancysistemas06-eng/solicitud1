@@ -1,13 +1,29 @@
 
-
-from django.conf import settings
 from django.db import models
+from django.conf import settings
 
+
+# ==========================================
+# SUCURSALES
+# ==========================================
 
 class Sucursal(models.Model):
-    clave = models.CharField(max_length=20, unique=True)
-    nombre = models.CharField(max_length=100)
-    activa = models.BooleanField(default=True)
+
+    clave = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name="Clave de sucursal"
+    )
+
+    nombre = models.CharField(
+        max_length=100,
+        verbose_name="Nombre de sucursal"
+    )
+
+    activa = models.BooleanField(
+        default=True,
+        verbose_name="Sucursal activa"
+    )
 
     class Meta:
         ordering = ["nombre"]
@@ -18,7 +34,12 @@ class Sucursal(models.Model):
         return f"{self.clave} - {self.nombre}"
 
 
+# ==========================================
+# PERFILES DE USUARIO
+# ==========================================
+
 class PerfilUsuario(models.Model):
+
     class Roles(models.TextChoices):
         ADMIN = "ADMIN", "Administrador de Sistemas"
         SUCURSAL = "SUCURSAL", "Usuario de sucursal"
@@ -30,7 +51,7 @@ class PerfilUsuario(models.Model):
     )
 
     rol = models.CharField(
-        max_length=10,
+        max_length=15,
         choices=Roles.choices,
         default=Roles.SUCURSAL
     )
@@ -45,11 +66,15 @@ class PerfilUsuario(models.Model):
 
     class Meta:
         verbose_name = "Perfil de usuario"
-        verbose_name_plural = "Perfiles de usuario"
+        verbose_name_plural = "Perfiles de usuarios"
 
     def __str__(self):
         return f"{self.usuario.username} - {self.get_rol_display()}"
 
+
+# ==========================================
+# INCIDENCIAS
+# ==========================================
 
 class Incidencia(models.Model):
 
@@ -90,9 +115,13 @@ class Incidencia(models.Model):
         default=Tipos.INCIDENCIA
     )
 
-    categoria = models.CharField(max_length=80)
+    categoria = models.CharField(
+        max_length=80
+    )
 
-    titulo = models.CharField(max_length=150)
+    titulo = models.CharField(
+        max_length=150
+    )
 
     descripcion = models.TextField()
 
@@ -128,19 +157,34 @@ class Incidencia(models.Model):
         related_name="incidencias_asignadas"
     )
 
-    solucion = models.TextField(blank=True)
+    solucion = models.TextField(
+        blank=True
+    )
 
-    creado_en = models.DateTimeField(auto_now_add=True)
+    creado_en = models.DateTimeField(
+        auto_now_add=True
+    )
 
-    actualizado_en = models.DateTimeField(auto_now=True)
+    actualizado_en = models.DateTimeField(
+        auto_now=True
+    )
 
     resuelto_en = models.DateTimeField(
         null=True,
         blank=True
     )
 
+    resuelto_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="incidencias_resueltas"
+    )
+
     class Meta:
         ordering = ["-creado_en"]
+
         verbose_name = "Incidencia"
         verbose_name_plural = "Incidencias"
 
@@ -155,7 +199,9 @@ class Incidencia(models.Model):
         if not self.folio:
             super().save(*args, **kwargs)
 
-            self.folio = f"INC-{self.creado_en:%Y}-{self.pk:05d}"
+            self.folio = (
+                f"INC-{self.creado_en:%Y}-{self.pk:05d}"
+            )
 
             super().save(update_fields=["folio"])
 
@@ -165,6 +211,10 @@ class Incidencia(models.Model):
     def __str__(self):
         return f"{self.folio or 'Sin folio'} - {self.titulo}"
 
+
+# ==========================================
+# SEGUIMIENTO DE INCIDENCIAS
+# ==========================================
 
 class Seguimiento(models.Model):
 
@@ -180,14 +230,28 @@ class Seguimiento(models.Model):
         related_name="seguimientos_realizados"
     )
 
+    estado_anterior = models.CharField(
+        max_length=10,
+        choices=Incidencia.Estados.choices,
+        blank=True
+    )
+
+    estado_nuevo = models.CharField(
+        max_length=10,
+        choices=Incidencia.Estados.choices,
+        blank=True
+    )
+
     comentario = models.TextField()
 
-    creado_en = models.DateTimeField(auto_now_add=True)
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
 
     class Meta:
-        ordering = ["creado_en"]
+        ordering = ["-fecha"]
         verbose_name = "Seguimiento"
         verbose_name_plural = "Seguimientos"
 
     def __str__(self):
-        return f"{self.incidencia.folio} - {self.usuario.username}"
+        return f"{self.incidencia.folio} - {self.fecha:%d/%m/%Y %H:%M}"

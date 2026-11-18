@@ -1,6 +1,4 @@
 
-
-
 import os
 from pathlib import Path
 
@@ -37,38 +35,34 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
-# Dominio dinámico de Vercel
-vercel_url = os.environ.get("VERCEL_URL", "").strip()
-
-vercel_url = (
-    vercel_url.removeprefix("https://")
-    .removeprefix("http://")
-    .rstrip("/")
-)
-
-if vercel_url and vercel_url not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(vercel_url)
-
-
-# ==========================================================
-# PROTECCIÓN CSRF Y HTTPS
-# ==========================================================
-
 CSRF_TRUSTED_ORIGINS = [
     "https://solicitud1.vercel.app",
     "https://solicitud1-b5pnc4vmr-abkeno.vercel.app",
 ]
 
-# Agregar dominio dinámico de Vercel
+# Reconocer el dominio asignado por Vercel
+vercel_url = os.environ.get("VERCEL_URL", "").strip()
+
 if vercel_url:
-    origin = f"https://{vercel_url}"
+    vercel_url = (
+        vercel_url
+        .replace("https://", "")
+        .replace("http://", "")
+        .rstrip("/")
+    )
 
-    if origin not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(origin)
+    if vercel_url not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(vercel_url)
 
-# Orígenes adicionales configurados en Vercel
+    origen_vercel = f"https://{vercel_url}"
+
+    if origen_vercel not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origen_vercel)
+
+# Dominios adicionales autorizados para CSRF
 extra_csrf_origins = os.environ.get(
-    "CSRF_TRUSTED_ORIGINS", ""
+    "CSRF_TRUSTED_ORIGINS",
+    ""
 )
 
 for origin in extra_csrf_origins.split(","):
@@ -77,18 +71,25 @@ for origin in extra_csrf_origins.split(","):
     if origin and origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(origin)
 
-# Reconocer HTTPS detrás del proxy de Vercel
+# HTTPS detrás del proxy de Vercel
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
 )
 
-# Redireccionar a HTTPS en producción
-SECURE_SSL_REDIRECT = not DEBUG
+# Seguridad HTTPS
+SECURE_SSL_REDIRECT = (
+    not DEBUG
+    and not os.environ.get("LOCAL_DEVELOPMENT")
+)
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
-
 SECURE_REFERRER_POLICY = "same-origin"
+
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+
+X_FRAME_OPTIONS = "DENY"
 
 
 # ==========================================================
@@ -172,9 +173,9 @@ TEMPLATES = [
 
 DATABASE_URL = (
     os.environ.get("DATABASE_URL", "").strip()
-
     or os.environ.get(
-        "abkenosolicitud_DATABASE_URL", ""
+        "abkenosolicitud_DATABASE_URL",
+        ""
     ).strip()
 )
 
@@ -214,13 +215,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": (
             "django.contrib.auth.password_validation."
             "MinimumLengthValidator"
-        ),
-    },
-
-    {
-        "NAME": (
-            "django.contrib.auth.password_validation."
-            "CommonPasswordValidator"
         ),
     },
 
@@ -291,10 +285,6 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 # COOKIES Y SESIONES
 # ==========================================================
 
-SESSION_COOKIE_SECURE = not DEBUG
-
-CSRF_COOKIE_SECURE = not DEBUG
-
 SESSION_COOKIE_HTTPONLY = True
 
 CSRF_COOKIE_HTTPONLY = False
@@ -313,5 +303,3 @@ SESSION_SAVE_EVERY_REQUEST = True
 # ==========================================================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-X_FRAME_OPTIONS = "DENY"
