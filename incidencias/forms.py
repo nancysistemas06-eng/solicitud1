@@ -1,4 +1,5 @@
 
+
 from django import forms
 from .models import Incidencia
 
@@ -7,13 +8,14 @@ class IncidenciaForm(forms.ModelForm):
 
     class Meta:
         model = Incidencia
+
         fields = [
             "tipo",
             "categoria",
             "titulo",
             "descripcion",
             "prioridad",
-            "fecha_compromiso",
+            "responsable",
         ]
 
         labels = {
@@ -22,7 +24,7 @@ class IncidenciaForm(forms.ModelForm):
             "titulo": "Título del reporte",
             "descripcion": "Descripción detallada",
             "prioridad": "Prioridad",
-            "fecha_compromiso": "Fecha compromiso",
+            "responsable": "Responsable al que se reportó",
         }
 
         widgets = {
@@ -45,8 +47,8 @@ class IncidenciaForm(forms.ModelForm):
             "prioridad": forms.Select(attrs={
                 "class": "form-select"
             }),
-            "fecha_compromiso": forms.DateInput(attrs={
+            "responsable": forms.TextInput(attrs={
                 "class": "form-control",
-                "type": "date"
+                "placeholder": "Nombre de la persona a quien se reportó"
             }),
         }

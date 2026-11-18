@@ -1,4 +1,5 @@
 
+
 from django.conf import settings
 from django.db import models
 
@@ -27,11 +28,13 @@ class PerfilUsuario(models.Model):
         on_delete=models.CASCADE,
         related_name="perfil"
     )
+
     rol = models.CharField(
         max_length=10,
         choices=Roles.choices,
         default=Roles.SUCURSAL
     )
+
     sucursal = models.ForeignKey(
         Sucursal,
         on_delete=models.PROTECT,
@@ -49,6 +52,7 @@ class PerfilUsuario(models.Model):
 
 
 class Incidencia(models.Model):
+
     class Tipos(models.TextChoices):
         INCIDENCIA = "INCIDENCIA", "Incidencia"
         SOLICITUD = "SOLICITUD", "Solicitud"
@@ -73,34 +77,49 @@ class Incidencia(models.Model):
         unique=True,
         blank=True
     )
+
     sucursal = models.ForeignKey(
         Sucursal,
         on_delete=models.PROTECT,
         related_name="incidencias"
     )
+
     tipo = models.CharField(
         max_length=15,
         choices=Tipos.choices,
         default=Tipos.INCIDENCIA
     )
+
     categoria = models.CharField(max_length=80)
+
     titulo = models.CharField(max_length=150)
+
     descripcion = models.TextField()
+
+    reportado_a = models.CharField(
+        max_length=100,
+        verbose_name="Responsable al que se reportó",
+        blank=True
+    )
+
     prioridad = models.CharField(
         max_length=10,
         choices=Prioridades.choices,
         default=Prioridades.MEDIA
     )
+
     estado = models.CharField(
         max_length=10,
         choices=Estados.choices,
         default=Estados.NUEVA
     )
+
     creado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="incidencias_creadas"
     )
+
     responsable = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -108,16 +127,23 @@ class Incidencia(models.Model):
         blank=True,
         related_name="incidencias_asignadas"
     )
-    fecha_compromiso = models.DateField(null=True, blank=True)
+
     solucion = models.TextField(blank=True)
+
     creado_en = models.DateTimeField(auto_now_add=True)
+
     actualizado_en = models.DateTimeField(auto_now=True)
-    resuelto_en = models.DateTimeField(null=True, blank=True)
+
+    resuelto_en = models.DateTimeField(
+        null=True,
+        blank=True
+    )
 
     class Meta:
         ordering = ["-creado_en"]
         verbose_name = "Incidencia"
         verbose_name_plural = "Incidencias"
+
         indexes = [
             models.Index(fields=["sucursal", "estado"]),
             models.Index(fields=["prioridad", "estado"]),
@@ -125,10 +151,14 @@ class Incidencia(models.Model):
         ]
 
     def save(self, *args, **kwargs):
+
         if not self.folio:
             super().save(*args, **kwargs)
+
             self.folio = f"INC-{self.creado_en:%Y}-{self.pk:05d}"
+
             super().save(update_fields=["folio"])
+
         else:
             super().save(*args, **kwargs)
 
@@ -137,17 +167,21 @@ class Incidencia(models.Model):
 
 
 class Seguimiento(models.Model):
+
     incidencia = models.ForeignKey(
         Incidencia,
         on_delete=models.CASCADE,
         related_name="seguimientos"
     )
+
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="seguimientos_realizados"
     )
+
     comentario = models.TextField()
+
     creado_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:
