@@ -67,23 +67,9 @@ class PerfilUsuario(models.Model):
     class Meta:
         verbose_name = "Perfil de usuario"
         verbose_name_plural = "Perfiles de usuarios"
-    
-    def save(self, *args, **kwargs):
 
-        if not self.folio:
-
-            super().save(*args, **kwargs)
-
-            self.folio = (
-                f"INC-{self.creado_en:%Y}-{self.pk:05d}"
-            )
-
-            super().save(update_fields=["folio"])
-
-            return
-
-        super().save(*args, **kwargs)
-
+    def __str__(self):
+        return f"{self.usuario.username} - {self.get_rol_display()}"
 
 
 # ==========================================
@@ -188,12 +174,6 @@ class Incidencia(models.Model):
         blank=True
     )
 
-    
-    resuelto_en = models.DateTimeField(
-        null=True,
-        blank=True
-    )
-
     resuelto_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -215,16 +195,22 @@ class Incidencia(models.Model):
 
     def save(self, *args, **kwargs):
 
-        super().save(*args, **kwargs)
-
         if not self.folio:
+
+            super().save(*args, **kwargs)
+
             self.folio = (
                 f"INC-{self.creado_en:%Y}-{self.pk:05d}"
             )
 
             super().save(update_fields=["folio"])
 
+            return
 
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.folio} - {self.titulo}"
 
 
 # ==========================================
