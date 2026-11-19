@@ -1,8 +1,8 @@
-
 from django import forms
 from django.contrib.auth import get_user_model
 
 from .models import Incidencia, Sucursal
+
 
 Usuario = get_user_model()
 
@@ -16,10 +16,12 @@ class IncidenciaForm(forms.ModelForm):
     reportado_a = forms.CharField(
         required=False,
         label="Responsable al que se reportó",
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Nombre de la persona a quien se reportó"
-        })
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Nombre de la persona a quien se reportó",
+            }
+        ),
     )
 
     sucursal = forms.ModelChoiceField(
@@ -27,9 +29,11 @@ class IncidenciaForm(forms.ModelForm):
         required=True,
         label="Sucursal",
         empty_label="Selecciona una sucursal",
-        widget=forms.Select(attrs={
-            "class": "form-select"
-        })
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
     )
 
     class Meta:
@@ -56,22 +60,32 @@ class IncidenciaForm(forms.ModelForm):
         }
 
         widgets = {
-            "tipo": forms.Select(attrs={
-                "class": "form-select"
-            }),
-            "categoria": forms.TextInput(attrs={
-                "class": "form-control"
-            }),
-            "titulo": forms.TextInput(attrs={
-                "class": "form-control"
-            }),
-            "descripcion": forms.Textarea(attrs={
-                "class": "form-control",
-                "rows": 5
-            }),
-            "prioridad": forms.Select(attrs={
-                "class": "form-select"
-            }),
+            "tipo": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "categoria": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "titulo": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "descripcion": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 5,
+                }
+            ),
+            "prioridad": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -80,6 +94,14 @@ class IncidenciaForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
+        # Forzar categoría como lista desplegable
+        self.fields["categoria"].widget = forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        )
+
+        # Los usuarios de sucursal no seleccionan la sucursal
         if not es_admin:
             self.fields.pop("sucursal")
 
@@ -120,39 +142,59 @@ class AdministrarIncidenciaForm(forms.ModelForm):
         }
 
         widgets = {
-            "sucursal": forms.Select(attrs={
-                "class": "form-select"
-            }),
-            "tipo": forms.Select(attrs={
-                "class": "form-select"
-            }),
-            "categoria": forms.TextInput(attrs={
-                "class": "form-control"
-            }),
-            "titulo": forms.TextInput(attrs={
-                "class": "form-control"
-            }),
-            "descripcion": forms.Textarea(attrs={
-                "class": "form-control",
-                "rows": 4
-            }),
-            "prioridad": forms.Select(attrs={
-                "class": "form-select"
-            }),
-            "estado": forms.Select(attrs={
-                "class": "form-select"
-            }),
-            "reportado_a": forms.TextInput(attrs={
-                "class": "form-control"
-            }),
-            "responsable": forms.Select(attrs={
-                "class": "form-select"
-            }),
-            "solucion": forms.Textarea(attrs={
-                "class": "form-control",
-                "rows": 4,
-                "placeholder": "Describe la solución aplicada..."
-            }),
+            "sucursal": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "tipo": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "categoria": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "titulo": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "descripcion": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                }
+            ),
+            "prioridad": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "estado": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "reportado_a": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                }
+            ),
+            "responsable": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "solucion": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                    "placeholder": "Describe la solución aplicada...",
+                }
+            ),
         }
 
     def __init__(self, *args, **kwargs):
