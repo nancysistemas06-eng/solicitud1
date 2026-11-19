@@ -26,6 +26,8 @@ DEBUG = os.environ.get("DEBUG", "False").lower() in (
     "1",
     "yes",
 )
+if os.environ.get("LOCAL_DEVELOPMENT") == "1":
+    DEBUG = True
 
 ALLOWED_HOSTS = [
     "solicitud1.vercel.app",
@@ -85,7 +87,10 @@ SECURE_PROXY_SSL_HEADER = (
 )
 
 # Seguridad HTTPS
-SECURE_SSL_REDIRECT = not DEBUG and not os.environ.get("LOCAL_DEVELOPMENT")
+SECURE_SSL_REDIRECT = (
+    not DEBUG
+    and not os.environ.get("LOCAL_DEVELOPMENT")
+)
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
@@ -255,7 +260,15 @@ USE_TZ = True
 # ARCHIVOS ESTÁTICOS
 # ==========================================================
 
+# ==========================================================
+# ARCHIVOS ESTÁTICOS
+# ==========================================================
+
 STATIC_URL = "/static/"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
