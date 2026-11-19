@@ -188,6 +188,12 @@ class Incidencia(models.Model):
         blank=True
     )
 
+    
+    resuelto_en = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
     resuelto_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -198,7 +204,6 @@ class Incidencia(models.Model):
 
     class Meta:
         ordering = ["-creado_en"]
-
         verbose_name = "Incidencia"
         verbose_name_plural = "Incidencias"
 
@@ -208,19 +213,18 @@ class Incidencia(models.Model):
             models.Index(fields=["creado_en"]),
         ]
 
-def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
 
-    if not self.folio and self.pk:
-        self.folio = f"INC-{self.pk:05d}"
+        super().save(*args, **kwargs)
 
-    super().save(*args, **kwargs)
+        if not self.folio:
+            self.folio = (
+                f"INC-{self.creado_en:%Y}-{self.pk:05d}"
+            )
 
-    if not self.folio:
-        self.folio = (
-            f"INC-{self.creado_en:%Y}-{self.pk:05d}"
-        )
+            super().save(update_fields=["folio"])
 
-        super().save(update_fields=["folio"])
+
 
 
 # ==========================================
