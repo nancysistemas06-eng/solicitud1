@@ -89,6 +89,16 @@ class Incidencia(models.Model):
         ALTA = "ALTA", "Alta"
         CRITICA = "CRITICA", "Crítica"
 
+    class Categorias(models.TextChoices):
+        SISTEMAS = "SISTEMAS", "Sistemas (Equipo de cómputo en general)"
+        OPERACIONES = "OPERACIONES", "Operaciones"
+        MANTENIMIENTO = "MANTENIMIENTO", "Mantenimiento"
+        TESORERIA = "TESORERIA", "Tesorería"
+        RECURSOS_HUMANOS = "RECURSOS_HUMANOS", "Recursos Humanos"
+        INVENTARIOS = "INVENTARIOS", "Inventarios"
+        CONTABILIDAD = "CONTABILIDAD", "Contabilidad"
+        OTROS = "OTROS", "Otros"
+
     class Estados(models.TextChoices):
         NUEVA = "NUEVA", "Nueva"
         REVISION = "REVISION", "En revisión"
@@ -116,7 +126,10 @@ class Incidencia(models.Model):
     )
 
     categoria = models.CharField(
-        max_length=80
+        max_length=80,
+        choices=Categorias.choices,
+        verbose_name="Categoría"
+    
     )
 
     titulo = models.CharField(
