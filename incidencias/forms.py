@@ -87,21 +87,22 @@ class IncidenciaForm(forms.ModelForm):
                 }
             ),
         }
-
-    def __init__(self, *args, **kwargs):
+def __init__(self, *args, **kwargs):
 
         es_admin = kwargs.pop("es_admin", False)
 
         super().__init__(*args, **kwargs)
 
-        # Forzar categoría como lista desplegable
+        # Configurar categorías
         self.fields["categoria"].widget = forms.Select(
-            attrs={
-                "class": "form-select",
-            }
+            attrs={"class": "form-select"}
         )
 
-        # Los usuarios de sucursal no seleccionan la sucursal
+        self.fields["categoria"].choices = Incidencia._meta.get_field(
+            "categoria"
+        ).choices
+
+        # Ocultar sucursal a usuarios de sucursal
         if not es_admin:
             self.fields.pop("sucursal")
 
