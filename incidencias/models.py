@@ -67,9 +67,23 @@ class PerfilUsuario(models.Model):
     class Meta:
         verbose_name = "Perfil de usuario"
         verbose_name_plural = "Perfiles de usuarios"
+    
+    def save(self, *args, **kwargs):
 
-    def __str__(self):
-        return f"{self.usuario.username} - {self.get_rol_display()}"
+        if not self.folio:
+
+            super().save(*args, **kwargs)
+
+            self.folio = (
+                f"INC-{self.creado_en:%Y}-{self.pk:05d}"
+            )
+
+            super().save(update_fields=["folio"])
+
+            return
+
+        super().save(*args, **kwargs)
+
 
 
 # ==========================================
@@ -194,22 +208,19 @@ class Incidencia(models.Model):
             models.Index(fields=["creado_en"]),
         ]
 
-    def save(self, *args, **kwargs):
+def save(self, *args, **kwargs):
 
-        if not self.folio:
-            super().save(*args, **kwargs)
+    if not self.folio and self.pk:
+        self.folio = f"INC-{self.pk:05d}"
 
-            self.folio = (
-                f"INC-{self.creado_en:%Y}-{self.pk:05d}"
-            )
+    super().save(*args, **kwargs)
 
-            super().save(update_fields=["folio"])
+    if not self.folio:
+        self.folio = (
+            f"INC-{self.creado_en:%Y}-{self.pk:05d}"
+        )
 
-        else:
-            super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.folio or 'Sin folio'} - {self.titulo}"
+        super().save(update_fields=["folio"])
 
 
 # ==========================================

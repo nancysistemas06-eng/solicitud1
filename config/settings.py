@@ -36,8 +36,15 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    # Desarrollo local
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+
+    # Vercel
     "https://solicitud1.vercel.app",
     "https://solicitud1-b5pnc4vmr-abkeno.vercel.app",
+
+
 ]
 
 # Reconocer el dominio asignado por Vercel
@@ -78,16 +85,13 @@ SECURE_PROXY_SSL_HEADER = (
 )
 
 # Seguridad HTTPS
-SECURE_SSL_REDIRECT = (
-    not DEBUG
-    and not os.environ.get("LOCAL_DEVELOPMENT")
-)
+SECURE_SSL_REDIRECT = not DEBUG and not os.environ.get("LOCAL_DEVELOPMENT")
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 
-CSRF_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
 
 X_FRAME_OPTIONS = "DENY"
 
